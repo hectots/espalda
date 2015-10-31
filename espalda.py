@@ -3,12 +3,16 @@ import os
 import sys
 import urllib2
 from zipfile import ZipFile
+import json
 
 
 def execute_command(command, params):
     if command == 'create':
         if params is not None and len(params) >= 1:
             create_project(' '.join(params))
+    elif command == 'controller':
+        if params is not None and len(params) == 1:
+            create_controller()
 
 
 def create_project(project_name):
@@ -16,6 +20,7 @@ def create_project(project_name):
     create_js_directory_structure(project_name)
     create_app(project_name)
     update_main(project_name)
+    create_config(project_name)
 
 
 def copy_h5bp_to_project(project_name):
@@ -71,6 +76,21 @@ def update_main(project_name):
     main_js = open(to_lower_case(project_name) + '/js/main.js', 'w')
     main_js.write(main_js_contents)
     main_js.close()
+
+
+def create_config(project_name):
+    json_data = {'project_name': project_name}
+    config_file = open(to_lower_case(project_name) + '/espalda.json', 'w')
+    config_file.write(json.dumps(json_data, sort_keys=True, indent=4, separators=(',', ': ')))
+    config_file.close()
+
+
+def create_controller():
+    pass
+
+
+def read_config():
+    pass
 
 
 def to_lower_case(s):
