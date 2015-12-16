@@ -1,0 +1,235 @@
+#!/usr/bin/python
+import os
+import sys
+import urllib2
+from zipfile import ZipFile
+import json
+
+
+def execute_command(command, params):
+    if command == 'create':
+        if params is not None and len(params) >= 1:
+            create_project(' '.join(params))
+    elif command == 'controller':
+        if params is not None and len(params) >= 1:
+            create_controller(' '.join(params))
+    elif command == 'collection':
+        if params is not None and len(params) >= 1:
+            create_collection(' '.join(params))
+    elif command == 'model':
+        if params is not None and len(params) >= 1:
+            create_model(' '.join(params))
+    elif command == 'view':
+        if params is not None and len(params) >= 1:
+            create_view(' '.join(params))
+    elif command == 'router':
+        if params is not None and len(params) >= 1:
+            create_router(' '.join(params))
+
+
+def create_project(project_name):
+    copy_h5bp_to_project(project_name)
+    create_js_directory_structure(project_name)
+    create_app(project_name)
+    update_main(project_name)
+    create_config(project_name)
+
+
+def copy_h5bp_to_project(project_name):
+    response = urllib2.urlopen('http://www.initializr.com/builder?boot-hero&jquerymin&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts')
+    h5bp = response.read()
+    h5bp_zip = open('h5bp.zip', 'w')
+    h5bp_zip.write(h5bp)
+    h5bp_zip.close()
+    h5bp_zip_file = ZipFile('h5bp.zip', 'r')
+    h5bp_zip_file.extractall()
+    os.rename('initializr', to_lower_case(project_name))
+    os.remove('h5bp.zip')
+
+
+def create_js_directory_structure(project_name):
+    project_name = to_lower_case(project_name)
+    os.makedirs(project_name + '/js/app/collections')
+    os.makedirs(project_name + '/js/app/controllers')
+    os.makedirs(project_name + '/js/app/models')
+    os.makedirs(project_name + '/js/app/routers')
+    os.makedirs(project_name + '/js/app/templates')
+    os.makedirs(project_name + '/js/app/views')
+
+
+def create_app(project_name):
+    app_js_template = """var %(project_name)s = {
+    Models: {},
+    Collections: {},
+    Views: {},
+    Routers: {},
+    Controllers: {},
+
+    init: function () {
+        'use strict';
+
+        Backbone.history.start();
+    }
+};"""
+
+    app_js_contents = app_js_template % {'project_name': to_camel_case(project_name)}
+    app_js = open(to_lower_case(project_name) + '/js/app/app.js', 'w')
+    app_js.write(app_js_contents)
+    app_js.close()
+
+
+def update_main(project_name):
+    main_js_template = """$(document).ready(function () {
+    'use strict';
+    %(project_name)s.init();
+});"""
+
+    main_js_contents = main_js_template % {'project_name': to_camel_case(project_name)}
+    main_js = open(to_lower_case(project_name) + '/js/main.js', 'w')
+    main_js.write(main_js_contents)
+    main_js.close()
+
+
+def create_config(project_name):
+    json_data = {'project_name': project_name}
+    config_file = open(to_lower_case(project_name) + '/espalda.json', 'w')
+    config_file.write(json.dumps(json_data, sort_keys=True, indent=4, separators=(',', ': ')))
+    config_file.close()
+
+
+def create_controller(controller_name):
+    controller_template = """%(project_name)s.Controllers = %(project_name)s.Controllers || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Controllers.%(controller_name)sController = {
+        
+    };
+
+})();
+"""
+    create_part('controller', controller_name, controller_template)
+
+
+def create_collection(collection_name):
+    collection_template = """%(project_name)s.Collections = %(project_name)s.Collections || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Collections.%(collection_name)s = Backbone.Collection.extend({
+        model: %(project_name)s.Models.,
+        url: '',
+
+        parse: function(response, options)  {
+            return response.data;
+        }
+    });
+
+})();
+"""
+    create_part('collection', collection_name, collection_template)
+
+
+def create_model(model_name):
+    model_template = """%(project_name)s.Models = %(project_name)s.Models || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Models.%(model_name)s = Backbone.Model.extend({
+        
+    });
+
+})();
+"""
+    create_part('model', model_name, model_template)
+
+
+def create_view(view_name):
+    view_template = """%(project_name)s.Views = %(project_name)s.Views || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Views.%(view_name)sView = Backbone.View.extend({
+
+        template: templates.,
+
+        el: '',
+
+        events: {},
+
+        initialize: function () {
+            this.listenTo(this.collection, 'change', this.render);
+        },
+
+        render: function () {
+            var %(view_name)sCollection = {%(view_name)sCollection: this.collection.toJSON()};
+            this.\$el.html(Mustache.render(this.template, %(view_name)sCollection));
+        }
+
+    });
+
+})();
+"""
+    create_part('view', view_name, view_template)
+
+
+def create_router(router_name):
+    router_template = """%(project_name)s.Routers = %(project_name)s.Routers || {};
+
+(function () {
+    'use strict';
+
+    var %(router_name)sRouter = Backbone.Router.extend({
+        routes: {
+            "": ""
+        }
+    });
+
+    var appRouter = new %(router_name)sRouter();
+
+    appRouter.on('route:', function() {
+        
+    });
+
+})();
+"""
+    create_part('router', router_name, router_template)
+
+
+def create_part(part_type, part_name, part_template):
+    config = read_config()
+    project_name = config['project_name']
+    part_file = open('js/app/' + part_type + 's/' + to_lower_case(part_name) + '-' + part_type + '.js', 'w')
+    part_contents = part_template % {
+        'project_name': to_camel_case(project_name),
+        part_type + '_name': to_camel_case(part_name)
+    }
+    part_file.write(part_contents)
+    part_file.close()
+
+
+def read_config():
+    config_file = open('espalda.json')
+    config_contents = config_file.read()
+    config_json = json.loads(config_contents)
+    config_file.close()
+    return config_json
+
+
+def to_lower_case(s):
+    return ''.join([word.lower() for word in s.split(' ')])
+
+
+def to_camel_case(s):
+    return ''.join([word.title() for word in s.split(' ')])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+        params = sys.argv[2:] if len(sys.argv[1:]) > 1 else None
+        execute_command(command, params)
