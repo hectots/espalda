@@ -11,8 +11,20 @@ def execute_command(command, params):
         if params is not None and len(params) >= 1:
             create_project(' '.join(params))
     elif command == 'controller':
-        if params is not None and len(params) == 1:
-            create_controller()
+        if params is not None and len(params) >= 1:
+            create_controller(' '.join(params))
+    elif command == 'collection':
+        if params is not None and len(params) >= 1:
+            create_collection(' '.join(params))
+    elif command == 'model':
+        if params is not None and len(params) >= 1:
+            create_model(' '.join(params))
+    elif command == 'view':
+        if params is not None and len(params) >= 1:
+            create_view(' '.join(params))
+    elif command == 'router':
+        if params is not None and len(params) >= 1:
+            create_router(' '.join(params))
 
 
 def create_project(project_name):
@@ -85,12 +97,127 @@ def create_config(project_name):
     config_file.close()
 
 
-def create_controller():
-    pass
+def create_controller(controller_name):
+    controller_template = """%(project_name)s.Controllers = %(project_name)s.Controllers || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Controllers.%(controller_name)sController = {
+        
+    };
+
+})();
+"""
+    create_part('controller', controller_name, controller_template)
+
+
+def create_collection(collection_name):
+    collection_template = """%(project_name)s.Collections = %(project_name)s.Collections || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Collections.%(collection_name)s = Backbone.Collection.extend({
+        model: %(project_name)s.Models.,
+        url: '',
+
+        parse: function(response, options)  {
+            return response.data;
+        }
+    });
+
+})();
+"""
+    create_part('collection', collection_name, collection_template)
+
+
+def create_model(model_name):
+    model_template = """%(project_name)s.Models = %(project_name)s.Models || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Models.%(model_name)s = Backbone.Model.extend({
+        
+    });
+
+})();
+"""
+    create_part('model', model_name, model_template)
+
+
+def create_view(view_name):
+    view_template = """%(project_name)s.Views = %(project_name)s.Views || {};
+
+(function () {
+    'use strict';
+
+    %(project_name)s.Views.%(view_name)sView = Backbone.View.extend({
+
+        template: templates.,
+
+        el: '',
+
+        events: {},
+
+        initialize: function () {
+            this.listenTo(this.collection, 'change', this.render);
+        },
+
+        render: function () {
+            var %(view_name)sCollection = {%(view_name)sCollection: this.collection.toJSON()};
+            this.\$el.html(Mustache.render(this.template, %(view_name)sCollection));
+        }
+
+    });
+
+})();
+"""
+    create_part('view', view_name, view_template)
+
+
+def create_router(router_name):
+    router_template = """%(project_name)s.Routers = %(project_name)s.Routers || {};
+
+(function () {
+    'use strict';
+
+    var %(router_name)sRouter = Backbone.Router.extend({
+        routes: {
+            "": ""
+        }
+    });
+
+    var appRouter = new %(router_name)sRouter();
+
+    appRouter.on('route:', function() {
+        
+    });
+
+})();
+"""
+    create_part('router', router_name, router_template)
+
+
+def create_part(part_type, part_name, part_template):
+    config = read_config()
+    project_name = config['project_name']
+    part_file = open('js/app/' + part_type + 's/' + to_lower_case(part_name) + '-' + part_type + '.js', 'w')
+    part_contents = part_template % {
+        'project_name': to_camel_case(project_name),
+        part_type + '_name': to_camel_case(part_name)
+    }
+    part_file.write(part_contents)
+    part_file.close()
 
 
 def read_config():
-    pass
+    config_file = open('espalda.json')
+    config_contents = config_file.read()
+    config_json = json.loads(config_contents)
+    config_file.close()
+    return config_json
 
 
 def to_lower_case(s):
