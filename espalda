@@ -30,6 +30,7 @@ def execute_command(command, params):
 def create_project(project_name):
     copy_h5bp_to_project(project_name)
     create_js_directory_structure(project_name)
+    download_dependencies(project_name)
     create_app(project_name)
     update_main(project_name)
     create_config(project_name)
@@ -55,6 +56,20 @@ def create_js_directory_structure(project_name):
     os.makedirs(project_name + '/js/app/routers')
     os.makedirs(project_name + '/js/app/templates')
     os.makedirs(project_name + '/js/app/views')
+
+
+def download_dependencies(project_name):
+    download_dependency(project_name, 'underscore', 'http://underscorejs.org/underscore-min.js')
+    download_dependency(project_name, 'backbone', 'http://backbonejs.org/backbone-min.js')
+    download_dependency(project_name, 'mustache', 'https://raw.githubusercontent.com/janl/mustache.js/master/mustache.min.js')
+
+
+def download_dependency(project_name, dependency_name, dependency_url):
+    response = urllib2.urlopen(dependency_url)
+    dependency = response.read()
+    dependency_file = open(project_name + '/js/vendor/' + dependency_name + '.js', 'w')
+    dependency_file.write(dependency)
+    dependency_file.close()
 
 
 def create_app(project_name):
