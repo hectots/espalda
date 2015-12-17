@@ -37,13 +37,13 @@ def create_project(project_name):
 
 
 def copy_h5bp_to_project(project_name):
-    response = urllib2.urlopen('http://www.initializr.com/builder?boot-hero&jquerymin&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts')
-    h5bp = response.read()
+    h5bp = download('http://www.initializr.com/builder?boot-hero&jquerymin&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts')
     h5bp_zip = open('h5bp.zip', 'w')
     h5bp_zip.write(h5bp)
     h5bp_zip.close()
     h5bp_zip_file = ZipFile('h5bp.zip', 'r')
     h5bp_zip_file.extractall()
+    h5bp_zip_file.close()
     os.rename('initializr', to_lower_case(project_name))
     os.remove('h5bp.zip')
 
@@ -65,11 +65,20 @@ def download_dependencies(project_name):
 
 
 def download_dependency(project_name, dependency_name, dependency_url):
-    response = urllib2.urlopen(dependency_url)
-    dependency = response.read()
+    dependency = download(dependency_url)
     dependency_file = open(project_name + '/js/vendor/' + dependency_name + '.js', 'w')
     dependency_file.write(dependency)
     dependency_file.close()
+
+
+def download(url):
+    try:
+        response = urllib2.urlopen(url)
+        data = response.read()
+        return data
+    except urllib2.URLError, e:
+        print "Oh well, that file failed to download. You know, this one:\n" + url
+        sys.exit()
 
 
 def create_app(project_name):
