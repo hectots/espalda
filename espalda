@@ -5,6 +5,7 @@ import urllib2
 from zipfile import ZipFile
 import json
 import build
+import shutil
 
 
 js_dependencies = [
@@ -44,6 +45,7 @@ def execute_command(command, params):
 
 
 def create_project(project_name):
+    check_project_existance(project_name)
     copy_h5bp_to_project(project_name)
     modify_index(project_name)
     create_js_directory_structure(project_name)
@@ -51,6 +53,18 @@ def create_project(project_name):
     create_app(project_name)
     update_main(project_name)
     create_config(project_name)
+
+
+def check_project_existance(project_name):
+    if os.path.exists(to_lower_case(project_name)):
+        print "A project with this name already exists!"
+        print "Want to overwrite it? y/n"
+        answer = raw_input('> ')
+
+        if answer.lower() == 'y':
+            shutil.rmtree(to_lower_case(project_name))
+        else:
+            sys.exit()
 
 
 def copy_h5bp_to_project(project_name):
