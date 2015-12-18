@@ -6,6 +6,13 @@ from zipfile import ZipFile
 import json
 
 
+js_dependencies = [
+    {'name': 'underscore', 'url': 'http://underscorejs.org/underscore-min.js'},
+    {'name': 'backbone', 'url': 'http://backbonejs.org/backbone-min.js'},
+    {'name': 'mustache', 'url': 'https://raw.githubusercontent.com/janl/mustache.js/master/mustache.min.js'}
+]
+
+
 def execute_command(command, params):
     if command == 'create':
         if params is not None and len(params) >= 1:
@@ -25,6 +32,12 @@ def execute_command(command, params):
     elif command == 'router':
         if params is not None and len(params) >= 1:
             create_router(' '.join(params))
+    elif command == 'all':
+        if params is not None and len(params) >= 1:
+            name = ' '.join(params)
+            create_controller(name)
+            create_collection(name)
+            create_view(name)
 
 
 def create_project(project_name):
@@ -59,14 +72,13 @@ def create_js_directory_structure(project_name):
 
 
 def download_dependencies(project_name):
-    download_dependency(project_name, 'underscore', 'http://underscorejs.org/underscore-min.js')
-    download_dependency(project_name, 'backbone', 'http://backbonejs.org/backbone-min.js')
-    download_dependency(project_name, 'mustache', 'https://raw.githubusercontent.com/janl/mustache.js/master/mustache.min.js')
+    for dependency in js_dependencies:
+        download_dependency(project_name, dependency['name'], dependency['url'])
 
 
 def download_dependency(project_name, dependency_name, dependency_url):
     dependency = download(dependency_url)
-    dependency_file = open(project_name + '/js/vendor/' + dependency_name + '.js', 'w')
+    dependency_file = open(to_lower_case(project_name) + '/js/vendor/' + dependency_name + '.js', 'w')
     dependency_file.write(dependency)
     dependency_file.close()
 
@@ -78,7 +90,16 @@ def download(url):
         return data
     except urllib2.URLError, e:
         print "Oh well, that file failed to download. You know, this one:\n" + url
+        cleanup_broken_downloads()
         sys.exit()
+
+
+def cleanup_broken_downloads():
+    if os.path.exists('h5bp.zip'):
+        os.remove('h5bp.zip')
+
+    if os.path.exists('initializr'):
+        os.remove('initializr')
 
 
 def create_app(project_name):
