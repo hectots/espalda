@@ -117,7 +117,7 @@ def create_app(project_name):
     }
 };"""
 
-    app_js_contents = app_js_template % {'project_name': to_camel_case(project_name)}
+    app_js_contents = app_js_template % {'project_name': to_upper_camel_case(project_name)}
     app_js = open(to_lower_case(project_name) + '/js/app/app.js', 'w')
     app_js.write(app_js_contents)
     app_js.close()
@@ -129,7 +129,7 @@ def update_main(project_name):
     %(project_name)s.init();
 });"""
 
-    main_js_contents = main_js_template % {'project_name': to_camel_case(project_name)}
+    main_js_contents = main_js_template % {'project_name': to_upper_camel_case(project_name)}
     main_js = open(to_lower_case(project_name) + '/js/main.js', 'w')
     main_js.write(main_js_contents)
     main_js.close()
@@ -220,6 +220,13 @@ def create_view(view_name):
 })();
 """
     create_part('view', view_name, view_template)
+    create_template(view_name)
+
+
+def create_template(template_name):
+    template_file = open('js/app/templates/' + to_lower_camel_case(template_name) + '.mustache', 'w')
+    template_file.write('<!-- template: %s -->' % to_lower_camel_case(template_name))
+    template_file.close()
 
 
 def create_router(router_name):
@@ -250,8 +257,8 @@ def create_part(part_type, part_name, part_template):
     project_name = config['project_name']
     part_file = open('js/app/' + part_type + 's/' + to_lower_case(part_name) + '-' + part_type + '.js', 'w')
     part_contents = part_template % {
-        'project_name': to_camel_case(project_name),
-        part_type + '_name': to_camel_case(part_name)
+        'project_name': to_upper_camel_case(project_name),
+        part_type + '_name': to_upper_camel_case(part_name)
     }
     part_file.write(part_contents)
     part_file.close()
@@ -266,11 +273,18 @@ def read_config():
 
 
 def to_lower_case(s):
-    return ''.join([word.lower() for word in s.split(' ')])
+    words = s.split(' ')
+    return ''.join([word.lower() for word in words])
 
 
-def to_camel_case(s):
-    return ''.join([word.title() for word in s.split(' ')])
+def to_upper_camel_case(s):
+    words = s.split(' ')
+    return ''.join([word.title() for word in words])
+
+
+def to_lower_camel_case(s):
+    words = s.split(' ')
+    return words[0].lower() + ''.join([word.title() for word in words[1:]])
 
 
 if __name__ == '__main__':
