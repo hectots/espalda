@@ -180,10 +180,10 @@ def create_app(project_name):
 def add_default_scripts(project_name):
     template_script_tag = '<script src="js/app/templates/template.js"></script>'
     app_script_tag = '<script src="js/app/app.js"></script>'
-    main_script_tag = '<script src="js/main.js"></script>'
+    scripts_marker = '<!-- scripts:end -->'
 
-    insert_into_index(project_name, template_script_tag, main_script_tag)
-    insert_into_index(project_name, app_script_tag, main_script_tag)
+    insert_into_index(project_name, template_script_tag, scripts_marker)
+    insert_into_index(project_name, app_script_tag, scripts_marker)
 
 
 def update_main(project_name):
