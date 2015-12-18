@@ -45,6 +45,7 @@ def execute_command(command, params):
 
 def create_project(project_name):
     copy_h5bp_to_project(project_name)
+    modify_index(project_name)
     create_js_directory_structure(project_name)
     download_dependencies(project_name)
     create_app(project_name)
@@ -62,6 +63,26 @@ def copy_h5bp_to_project(project_name):
     h5bp_zip_file.close()
     os.rename('initializr', to_lower_case(project_name))
     os.remove('h5bp.zip')
+
+
+def modify_index(project_name):
+    index_file = open(to_lower_case(project_name) + '/index.html')
+    index_contents = index_file.read()
+    index_file.close()
+
+    main_script_tag = '<script src="js/main.js"></script>'
+    scripts_start = index_contents.find(main_script_tag)
+    scripts_end = scripts_start + len(main_script_tag)
+
+    before_main_script_tag = index_contents[:scripts_start]
+    after_main_script_tag = index_contents[scripts_end:]
+
+    new_index_contents_template = "%s<!-- scripts: start -->\n        <!-- scripts:end -->\n        %s%s"
+    new_index_contents = new_index_contents_template % (before_main_script_tag, main_script_tag, after_main_script_tag)
+
+    index_file = open(to_lower_case(project_name) + '/index.html', 'w')
+    index_file.write(new_index_contents)
+    index_file.close()
 
 
 def create_js_directory_structure(project_name):
