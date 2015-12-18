@@ -9,5 +9,6 @@ setup(
     description="Scaffolding tool for Backbone.js applications",
     author="Hector M. Toledo",
     author_email="hector.toledo.soto@gmail.com",
+    py_modules=['build'],
     scripts=['espalda']
 )
