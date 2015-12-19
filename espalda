@@ -178,7 +178,7 @@ def create_app(project_name):
 
 
 def add_default_scripts(project_name):
-    template_script_tag = '<script src="js/app/templates/template.js"></script>'
+    template_script_tag = '<script src="js/app/templates/templates.js"></script>'
     app_script_tag = '<script src="js/app/app.js"></script>'
     scripts_marker = '<!-- scripts:end -->'
 
@@ -275,7 +275,7 @@ def create_view(view_name):
 
         render: function () {
             var %(view_name)sCollection = {%(view_name)sCollection: this.collection.toJSON()};
-            this.\$el.html(Mustache.render(this.template, %(view_name)sCollection));
+            this.$el.html(Mustache.render(this.template, %(view_name)sCollection));
         }
 
     });
