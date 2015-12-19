@@ -41,7 +41,7 @@ def execute_command(command, params):
             create_collection(name)
             create_view(name)
     elif command == 'build':
-        build.compile_templates('.', '.')
+        build.compile_templates('.')
 
 
 def create_project(project_name):
