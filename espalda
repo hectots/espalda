@@ -227,7 +227,7 @@ def create_collection(collection_name):
     'use strict';
 
     %(project_name)s.Collections.%(collection_name)s = Backbone.Collection.extend({
-        model: %(project_name)s.Models.,
+        // model: %(project_name)s.Models.,
         url: '',
 
         parse: function(response, options)  {
@@ -263,7 +263,7 @@ def create_view(view_name):
 
     %(project_name)s.Views.%(view_name)sView = Backbone.View.extend({
 
-        template: templates.,
+        template: templates.%(view_name_lcc)s,
 
         el: '',
 
@@ -274,8 +274,8 @@ def create_view(view_name):
         },
 
         render: function () {
-            var %(view_name)sCollection = {%(view_name)sCollection: this.collection.toJSON()};
-            this.$el.html(Mustache.render(this.template, %(view_name)sCollection));
+            var %(view_name_lcc)sCollection = {%(view_name_lcc)sCollection: this.collection.toJSON()};
+            this.$el.html(Mustache.render(this.template, %(view_name_lcc)sCollection));
         }
 
     });
@@ -322,7 +322,8 @@ def create_script(script_type, script_name, script_template):
     script_file = open(script_filename, 'w')
     script_contents = script_template % {
         'project_name': to_upper_camel_case(project_name),
-        script_type + '_name': to_upper_camel_case(script_name)
+        script_type + '_name': to_upper_camel_case(script_name),
+        script_type + '_name_lcc': to_lower_camel_case(script_name)
     }
     script_file.write(script_contents)
     script_file.close()
